@@ -1,28 +1,58 @@
+import { FormEvent, useRef, useState } from 'react';
 import { Form, Stack, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import CreatableReactSelect from "react-select/creatable";
+import { NoteData, Tag } from './App';
 
-export default function NoteForm() {
+type NoteFromProps = {
+    onSubmit: (data: NoteData) => void
+}
+
+export default function NoteForm({ onSubmit }: NoteFromProps) {
+  const titleRef = useRef<HTMLInputElement>(null);
+  const markdownRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedTags, setSelectedTags] =  useState<Tag[]>([])
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    //we put ! here as we make sure that in Form.Control they are "required" so they will never be null.
+    onSubmit({
+        title: titleRef.current!.value,
+        markdown: markdownRef.current!.value,
+        tags: []
+    })
+  }
+
   return (
-    <Form>
+    <Form onSubmit={handleSubmit}>
       <Stack gap={4}>
         <Row>
           <Col>
             <Form.Group controlId='title'>
               <Form.Label>Title</Form.Label>
-              <Form.Control required />
+              <Form.Control ref={titleRef} required />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId='tags'>
               <Form.Label>Tags</Form.Label>
-              <CreatableReactSelect isMulti />
+              <CreatableReactSelect 
+                value={selectedTags.map(tag => {
+                  return { label: tag.label, value: tag.id }
+                })}
+                onChange={tags => {
+                  setSelectedTags(tags.map(tag => {
+                    return { label: tag.label, id: tag.value }
+                  }))
+                }}
+                isMulti />
             </Form.Group>
           </Col>
         </Row>  
          <Form.Group controlId='markdown'>
            <Form.Label>Body</Form.Label>
-           <Form.Control required as="textarea" rows={15} />
+           <Form.Control ref={markdownRef} required as="textarea" rows={15} />
          </Form.Group>
          <Stack direction='horizontal' gap={2} className="justify-content-end">
             <Button type='submit' variant='primary'>
@@ -38,3 +68,10 @@ export default function NoteForm() {
     </Form>
   )
 }
+
+//in CreatableReactSelect's value: selectedTags we need to pass an array that has
+//keys for label and for value. For that, we need to take our selected tags and map it
+//to a brand new value; { label: tag.label, value: tag.id } The reason for this,
+//creatableReactSelect expects a label and an id for its value
+//and in onChange function we're converting from the value the creatableReactSelect expects
+//to the value that we're actually storing for our type which is an id and a label
