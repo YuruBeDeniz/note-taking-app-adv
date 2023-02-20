@@ -10,6 +10,7 @@ export function useLocalStorage<T>(key: string, initialValue: T | (() => T)) {
           return initialValue;
       }
     } else {
+      //console.log('jsonValue: ', jsonValue)
       return JSON.parse(jsonValue);
     }
   });
@@ -23,24 +24,25 @@ export function useLocalStorage<T>(key: string, initialValue: T | (() => T)) {
 
 //we know this function will take in a generic type <RawNote[]> | <Tag[]>,
 //a key "NOTES" | "TAGS" and a default initial value []
-//useLocalStorage<RawNote[]>("NOTES", []);
+//useLocalStorage<RawNote[]>("NOTES", []) | useLocalStorage<Tag[]>("TAGS", [])
 
 //initialValue: T | (() => T) --> as when we use useState you can eiter pass it a 
-//function or an initial value
+//an initial value or a function in our case [value, setValue] respectively
 
 //in useState<T>(..) we will use the function version of useState as we want to first
 //check to see if this data is in local storage
 
-//we'll stote this value in local storage using json
+//we'll store this value in local storage using json
 
 //if for some reason we dont have any value from local storage (if(jsonValue == null)), then i want to 
 //take that data and i want to make sure that i use the initial value passed in:
-//if(typeof initialValue === "function") that means we need to rund the function
+//if(typeof initialValue === "function") that means we need to run the function
 //version of this: here we need to run initialValue as a function: initialValue();
 //initialValue() -->like this TS will give an error as it doesnt know if this is
 //actually a function that we can call and we dont know that it returns <T> (type of T)
 //so we need to make sure that we take our initialValue and cast it to this exact type:
-//(initialValue as () => T)();
+//(initialValue as () => T)(); (This is function version of our parameter:
+// initialValue: T | (() => T) )
 //otherwise we can just return our initialValue
 
 

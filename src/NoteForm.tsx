@@ -1,17 +1,21 @@
 import { FormEvent, useRef, useState } from 'react';
 import { Form, Stack, Row, Col, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CreatableReactSelect from "react-select/creatable";
 import { NoteData, Tag } from './App';
+import { v4 as uuidV4 } from "uuid";
 
-type NoteFromProps = {
+type NoteFormProps = {
     onSubmit: (data: NoteData) => void
+    onAddTag: (tag: Tag) => void
+    availableTags: Tag[]
 }
 
-export default function NoteForm({ onSubmit }: NoteFromProps) {
+export default function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
   const titleRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedTags, setSelectedTags] =  useState<Tag[]>([])
+  const [selectedTags, setSelectedTags] =  useState<Tag[]>([]);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -20,8 +24,10 @@ export default function NoteForm({ onSubmit }: NoteFromProps) {
     onSubmit({
         title: titleRef.current!.value,
         markdown: markdownRef.current!.value,
-        tags: []
-    })
+        tags: selectedTags,
+    });
+
+    navigate("..");
   }
 
   return (
@@ -38,13 +44,21 @@ export default function NoteForm({ onSubmit }: NoteFromProps) {
             <Form.Group controlId='tags'>
               <Form.Label>Tags</Form.Label>
               <CreatableReactSelect 
+                onCreateOption={label => {
+                  const newTag = { id: uuidV4(), label };
+                  onAddTag(newTag);
+                  setSelectedTags(prev => [...prev, newTag]);
+                }}
                 value={selectedTags.map(tag => {
                   return { label: tag.label, value: tag.id }
                 })}
+                options={availableTags.map(tag => {
+                  return { label: tag.label, value: tag.id }
+                })} 
                 onChange={tags => {
                   setSelectedTags(tags.map(tag => {
                     return { label: tag.label, id: tag.value }
-                  }))
+                  })) 
                 }}
                 isMulti />
             </Form.Group>
@@ -75,3 +89,12 @@ export default function NoteForm({ onSubmit }: NoteFromProps) {
 //creatableReactSelect expects a label and an id for its value
 //and in onChange function we're converting from the value the creatableReactSelect expects
 //to the value that we're actually storing for our type which is an id and a label
+
+
+//onCreateOption (funtion takes in "label") on CreatableReactSelect --> we need to 
+//automatically sent the value because it doesn't call onChange function (which is
+// in the same CreatableReactSelect tag) when we create a new tag. Instead, it calls
+//this onCreateOption function.
+//why do we have onAddTag(newTag) is we want to make sure that we can store that info
+//inside our localStogare: const [tags, setTags] = useLocalStorage<Tag[]>("TAGS", []);
+//so we need to handle a function for that
