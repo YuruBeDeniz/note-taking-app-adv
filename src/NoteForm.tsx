@@ -9,12 +9,19 @@ type NoteFormProps = {
     onSubmit: (data: NoteData) => void
     onAddTag: (tag: Tag) => void
     availableTags: Tag[]
-}
+} & Partial<NoteData>
 
-export default function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
+export default function NoteForm({ 
+  onSubmit,
+  onAddTag, 
+  availableTags, 
+  title="",
+  markdown="", 
+  tags=[] 
+}: NoteFormProps) {
   const titleRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedTags, setSelectedTags] =  useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] =  useState<Tag[]>(tags);
   const navigate = useNavigate();
 
   const handleSubmit = (e: FormEvent) => {
@@ -37,7 +44,11 @@ export default function NoteForm({ onSubmit, onAddTag, availableTags }: NoteForm
           <Col>
             <Form.Group controlId='title'>
               <Form.Label>Title</Form.Label>
-              <Form.Control ref={titleRef} required />
+              <Form.Control 
+                ref={titleRef} 
+                required
+                defaultValue={title}
+              />
             </Form.Group>
           </Col>
           <Col>
@@ -66,16 +77,19 @@ export default function NoteForm({ onSubmit, onAddTag, availableTags }: NoteForm
         </Row>  
          <Form.Group controlId='markdown'>
            <Form.Label>Body</Form.Label>
-           <Form.Control ref={markdownRef} required as="textarea" rows={15} />
+           <Form.Control 
+            ref={markdownRef} 
+            required 
+            as="textarea" 
+            rows={15}
+            defaultValue={markdown} />
          </Form.Group>
          <Stack direction='horizontal' gap={2} className="justify-content-end">
             <Button type='submit' variant='primary'>
                 Save
             </Button>
             <Link to="..">
-            <Button type='button' variant="outline-secondary">
-                Cancel
-            </Button>
+            <Button type='button' variant="outline-secondary">Cancel</Button>
             </Link>
          </Stack>
       </Stack>
@@ -98,3 +112,13 @@ export default function NoteForm({ onSubmit, onAddTag, availableTags }: NoteForm
 //why do we have onAddTag(newTag) is we want to make sure that we can store that info
 //inside our localStogare: const [tags, setTags] = useLocalStorage<Tag[]>("TAGS", []);
 //so we need to handle a function for that
+
+//in EditNote: when we pass the below props to NoteForm
+//title={note.title} markdown={note.markdown} tags={note.tags} we dont have these
+//inside our NoteForm, to have them: we can take our props and add in all of the 
+//props for our note itself and this will be our NoteData
+//but this wont work as we dont pass these props in our NewNote, so we will make it
+//optional to pass that data in so: Partial<NoteData> --> means that we can pass any
+//of these properties of NoteData but none of them are required, all of them will be
+//optional: so we will pass title, markdown & tags to our function as empty strings
+//and array in our NoteForm function
